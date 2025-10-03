@@ -51,6 +51,12 @@ func (c *Cache) reapLoop() {
 	}
 }
 
+var CACHE *Cache
+
+func init() {
+	CACHE = NewCache(30 * time.Second)
+}
+
 func NewCache(interval time.Duration) *Cache {
 	c := &Cache{
 		data:     make(map[string]CacheEntry),

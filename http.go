@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/kyleludlow/pokedexcli/internal/pokecache"
+	pokecache "github.com/kyleludlow/pokedexcli/internal"
 )
 
 func get(url string) ([]byte, error) {
@@ -38,14 +38,27 @@ type PokeResponse[T any] struct {
 }
 
 func getData[T any](url string) (PokeResponse[T], error) {
-	var ch = pokecache.Cache
+	var ch = pokecache.CACHE
 
 	dataStruct := new(PokeResponse[T])
+
+	// use cache if exists
+	data, found := ch.Get(url)
+	if found {
+		jsonErr := json.Unmarshal(data, dataStruct)
+		if jsonErr != nil {
+			return *dataStruct, jsonErr
+		}
+		return *dataStruct, nil
+	}
 
 	body, err := get(url)
 	if err != nil {
 		return *dataStruct, err
 	}
+
+	// add bytes to cache
+	ch.Add(url, body)
 
 	jsonErr := json.Unmarshal(body, dataStruct)
 	if jsonErr != nil {
