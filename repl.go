@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/kyleludlow/pokedexcli/internal/pokeapi"
 )
 
 var config = Config{
 	Next:     "",
 	Previous: "",
+	Pokedex:  make(map[string]pokeapi.PokemonRes),
 }
 
 func startRepl() {
@@ -24,10 +27,14 @@ func startRepl() {
 		}
 
 		commandName := words[0]
+		param := ""
+		if len(words) > 1 {
+			param = words[1]
+		}
 
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback(&config)
+			err := command.callback(&config, param)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -42,12 +49,13 @@ func startRepl() {
 type Config struct {
 	Next     string
 	Previous string
+	Pokedex  map[string]pokeapi.PokemonRes
 }
 
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(config *Config) error
+	callback    func(config *Config, param string) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -71,6 +79,21 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "lists previous areas",
 			callback:    commandMapb,
+		},
+		"explore": {
+			name:        "explore",
+			description: "explore area",
+			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "attempt to catch a pokemon by name",
+			callback:    commandCatch,
+		},
+		"inspect": {
+			name:        "inspect",
+			description: "inspect pokemon",
+			callback:    commandInspect,
 		},
 	}
 }

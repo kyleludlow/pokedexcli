@@ -1,11 +1,11 @@
-package main
+package pokeapi
 
 import (
 	"encoding/json"
 	"io"
 	"net/http"
 
-	pokecache "github.com/kyleludlow/pokedexcli/internal"
+	pokecache "github.com/kyleludlow/pokedexcli/internal/pokecache"
 )
 
 func get(url string) ([]byte, error) {
@@ -30,17 +30,17 @@ func get(url string) ([]byte, error) {
 	return body, nil
 }
 
-type PokeResponse[T any] struct {
+type PokeResponseWrapper[T any] struct {
 	Count    int     `json:"count"`
 	Next     *string `json:"next"`
 	Previous *string `json:"previous"`
 	Results  []T
 }
 
-func getData[T any](url string) (PokeResponse[T], error) {
+func GetData[T any](url string) (T, error) {
 	var ch = pokecache.CACHE
 
-	dataStruct := new(PokeResponse[T])
+	dataStruct := new(T)
 
 	// use cache if exists
 	data, found := ch.Get(url)
